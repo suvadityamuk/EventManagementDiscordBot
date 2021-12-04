@@ -452,4 +452,4 @@ async def help_wanted(ctx):
         await ctx.send(f'```\nCommand : {i.name}\nDescription :\n{i.help}\n\n```')
 
 bot.add_cog(ChannelHandler(bot))
-bot.run('OTE0ODExMDIzODQyNzYyNzc0.YaSeKA.RVUgiPXE5GS0b1Z154dXpxRy__A')
+bot.run('<YOUR DISCORD TOKEN HERE>')
