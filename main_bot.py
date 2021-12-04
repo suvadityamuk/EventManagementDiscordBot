@@ -65,11 +65,13 @@ class ChannelHandler(commands.Cog):
         Creates a new Role
         Usage: $createGeneralRole <role_name>
         '''
-        curr_guild = ctx.guild
-        self.guild = ctx.guild
-        role_permissions = discord.Permissions(change_nickname=True, add_reactions=True, connect=True, attach_files=True, embed_links=True, read_message_history=True, read_messages=True, send_messages=True, speak=True, stream=True, use_external_emojis=True, use_voice_activation=True, view_channel=True)
-        await curr_guild.create_role(name=role_name, permissions=role_permissions, mentionable=True)
-    
+        try:
+            curr_guild = ctx.guild
+            role_permissions = discord.Permissions(change_nickname=True, add_reactions=True, connect=True, attach_files=True, embed_links=True, read_message_history=True, read_messages=True, send_messages=True, speak=True, stream=True, use_external_emojis=True, use_voice_activation=True, view_channel=True)
+            await curr_guild.create_role(name=role_name, permissions=role_permissions, mentionable=True)
+        except:
+            await ctx.send('Sorry, this action could not be completed. Error in Role-Creation.')
+
     @commands.command()
     @commands.check(checkIfUserIsCore)
     async def deleteGeneralRole(self, ctx, role_name:str):
@@ -78,8 +80,14 @@ class ChannelHandler(commands.Cog):
         Usage: $deleteGeneralRole <role_name>
         '''
         act_role = helpers.getRole(ctx, role_name)
-        self.guild = ctx.guild
-        await act_role.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        if act_role == None:
+            await ctx.send(f'Could not delete the {role_name} category. CodeWars was unable to find it')
+        else:
+            try:
+                self.guild = ctx.guild
+                await act_role.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            except:
+                await ctx.send(f'Could not delete the {role_name} role. CodeWars was unable to delete it.')
 
 
     @commands.command()
@@ -99,20 +107,22 @@ class ChannelHandler(commands.Cog):
         # role_to_sync_with = kwargs.get('role_to_sync_with', None)
         if type(role_to_sync_with) is str:
             role_to_sync_with = helpers.getRole(ctx, role_to_sync_with)
-        
-        if role_to_sync_with is None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-            }
-            await curr_guild.create_category_channel(cat_name, overwrites=overwrites, reason=f"This category was made by CodeWars, under command of '{ctx.author}'")
-        else:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
-            }
-            await curr_guild.create_category_channel(cat_name, overwrites=overwrites, reason=f"This category was made by CodeWars, under command of '{ctx.author}'")
+        try:
+            if role_to_sync_with is None: 
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                }
+                await curr_guild.create_category_channel(cat_name, overwrites=overwrites, reason=f"This category was made by CodeWars, under command of '{ctx.author}'")
+            else:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                    role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
+                }
+                await curr_guild.create_category_channel(cat_name, overwrites=overwrites, reason=f"This category was made by CodeWars, under command of '{ctx.author}'")
+        except:
+            await ctx.send(f'Could not create the {cat_name} category.')
 
     @commands.command()
     @commands.check(checkIfUserIsCore)
@@ -122,8 +132,12 @@ class ChannelHandler(commands.Cog):
         Usage: $deleteCategory <cat_name>
         '''
         act_category = helpers.getCategory(ctx, cat_name)
-        self.guild = ctx.guild
-        await act_category.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        if act_category == None:
+            await ctx.send(f'Could not delete the {cat_name} category. CodeWars was unable to find it')
+        try:
+            await act_category.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        except:
+            await ctx.send(f'Could not delete the {cat_name} category.')
 
     @commands.command()
     @commands.check(checkIfUserIsCore)
@@ -151,33 +165,35 @@ class ChannelHandler(commands.Cog):
             category = helpers.getCategory(ctx, category)
         if type(role_to_sync_with) is str:
             role_to_sync_with = helpers.getRole(ctx, role_to_sync_with)
-        
-        if category is None and role_to_sync_with is None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-            }
-            tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        elif category is not None and role_to_sync_with is None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-            }
-            tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        elif category is None and role_to_sync_with is not None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
-            }
-            tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        elif category is not None and role_to_sync_with is not None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
-            }
-            tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        try:
+            if category is None and role_to_sync_with is None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                }
+                tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            elif category is not None and role_to_sync_with is None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                }
+                tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            elif category is None and role_to_sync_with is not None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                    role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
+                }
+                tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            elif category is not None and role_to_sync_with is not None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                    role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
+                }
+                tc = await curr_guild.create_text_channel(text_channel_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        except:
+            await ctx.send(f'Could not create the {text_channel_name} Text Channel.')
 
     @commands.command()
     @commands.check(checkIfUserIsCore)
@@ -188,9 +204,15 @@ class ChannelHandler(commands.Cog):
         '''
         curr_guild = ctx.guild
         self.guild = ctx.guild
-        for i in curr_guild.text_channels:
-            if str(i) == text_channel_name:
-                await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        try:
+            for i in curr_guild.text_channels:
+                if str(i) == text_channel_name:
+                    await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            else:
+                await ctx.send('Could not delete the channel. CodeWars couldn\'t detect it')
+        except:
+            await ctx.send(f'Could not delete the {text_channel_name} Text Channel.')
+
 
     
     @commands.command()
@@ -219,33 +241,35 @@ class ChannelHandler(commands.Cog):
             category = helpers.getCategory(ctx, category)
         if type(role_to_sync_with) is str:
             role_to_sync_with = helpers.getRole(ctx, role_to_sync_with)
-        
-        if category is None and role_to_sync_with is None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-            }
-            vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        elif category is not None and role_to_sync_with is None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-            }
-            vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        elif category is None and role_to_sync_with is not None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
-            }
-            vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        elif category is not None and role_to_sync_with is not None:
-            overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
-            }
-            vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        try: 
+            if category is None and role_to_sync_with is None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                }
+                vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            elif category is not None and role_to_sync_with is None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=True),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                }
+                vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            elif category is None and role_to_sync_with is not None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                    role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
+                }
+                vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            elif category is not None and role_to_sync_with is not None:
+                overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                    role_to_sync_with: discord.PermissionOverwrite(read_messages=True),
+                }
+                vc = await curr_guild.create_voice_channel(vc_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=category, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        except:
+            await ctx.send('Sorry, this action was not completed. Error during creation of Voice channel')
 
 
     @commands.command()
@@ -256,48 +280,55 @@ class ChannelHandler(commands.Cog):
         Usage: $deleteVC <vcToDelete>
         '''
         curr_guild = ctx.guild
-        self.guild = ctx.guild
-        for i in curr_guild.voice_channels:
-            if str(i) == vcToDelete:
-                await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        try:
+            for i in curr_guild.voice_channels:
+                if str(i) == vcToDelete:
+                    await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        except:
+            await ctx.send('Sorry, this action was not completed. Error during deletion of Voice channel')
+
 
     @commands.command()
     @commands.check(checkIfUserIsCore)
     async def createAllTeamReqs(self, ctx, name1:str, name2:str, team_name:str, *kwargs):
         '''
-        Creates a Role, Category, Text and Voice Channel
+        Creates a Role, Category, Text and Voice Channel made for a specific team
         '''
-        curr_guild = ctx.guild
-        role_permissions = discord.Permissions(change_nickname=True, add_reactions=True, connect=True, attach_files=True, embed_links=True, read_message_history=True, read_messages=True, send_messages=True, speak=True, stream=True, use_external_emojis=True, use_voice_activation=True, view_channel=True)
-        role = await curr_guild.create_role(name=team_name, permissions=role_permissions, mentionable=True)
-        overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role: discord.PermissionOverwrite(read_messages=True),
-            }
-        cat = await curr_guild.create_category_channel(team_name, overwrites=overwrites, reason=f"This category was made by CodeWars, under command of '{ctx.author}'")
-        overwrites = {
-                curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                curr_guild.me: discord.PermissionOverwrite(read_messages=True),
-                role: discord.PermissionOverwrite(read_messages=True),
-            }
-        tc = await curr_guild.create_text_channel(team_name, overwrites=overwrites, category=cat, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        vc = await curr_guild.create_voice_channel(team_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=cat, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        try:
+            curr_guild = ctx.guild
+            role_permissions = discord.Permissions(change_nickname=True, add_reactions=True, connect=True, attach_files=True, embed_links=True, read_message_history=True, read_messages=True, send_messages=True, speak=True, stream=True, use_external_emojis=True, use_voice_activation=True, view_channel=True)
+            role = await curr_guild.create_role(name=team_name, permissions=role_permissions, mentionable=True)
+            overwrites = {
+                    curr_guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    curr_guild.me: discord.PermissionOverwrite(read_messages=True),
+                    role: discord.PermissionOverwrite(read_messages=True),
+                }
+            cat = await curr_guild.create_category_channel(team_name, overwrites=overwrites, reason=f"This category was made by CodeWars, under command of '{ctx.author}'")
+            await curr_guild.create_text_channel(team_name, overwrites=overwrites, category=cat, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            await curr_guild.create_voice_channel(team_name, bitrate=64000, user_limit=4, overwrites=overwrites, category=cat, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        except:
+            await ctx.send('Sorry, this action was not completed. Error during creation of Team-specific Assets')
 
     @commands.command()
     @commands.check(checkIfUserIsCore)
     async def deleteAllTeamReqs(self, ctx, team_name):
-        curr_guild = ctx.guild
-        for i in curr_guild.voice_channels:
-            if str(i) == team_name:
-                await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        for i in curr_guild.text_channels:
-            if str(i) == team_name:
-                await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        act_category = helpers.getCategory(ctx, team_name)
-        await act_category.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
-        act_role = helpers.getRole(ctx, team_name)
-        await act_role.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        '''
+        Deletes a Role, Category, Text and Voice Channel made for a specific team
+        '''
+        try:
+            curr_guild = ctx.guild
+            for i in curr_guild.voice_channels:
+                if str(i) == team_name:
+                    await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            for i in curr_guild.text_channels:
+                if str(i) == team_name:
+                    await i.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            act_category = helpers.getCategory(ctx, team_name)
+            await act_category.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+            act_role = helpers.getRole(ctx, team_name)
+            await act_role.delete(reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'")
+        except:
+            await ctx.send('Sorry, this action was not completed. Error during deletion of Team-specific Assets')
 
 
     @commands.command()
@@ -334,9 +365,7 @@ class ChannelHandler(commands.Cog):
         Usage: $addRole <username> <role_to_add>
         '''
         curr_member = helpers.getMember(ctx, username)
-        print('currmem=',type(curr_member))
         act_role = helpers.getRole(ctx, role_to_add)
-        print('role=',type(act_role))
         if type(curr_member) == discord.member.Member and type(act_role) == discord.role.Role:
             await curr_member.add_roles(act_role, reason=f"This action was performed by the CodeWars bot, under command of '{ctx.author}'", atomic=True)
         else:
@@ -420,12 +449,6 @@ async def help_wanted(ctx):
     await ctx.send('```\nCodeWars Bot : Help\n```')
     for i in comm_list:
         await ctx.send(f'```\nCommand : {i.name}\nDescription :\n{i.help}\n\n```')
-    # final_res = '```\nCodeWars Bot : Help\n'
-    
-    # for i in comm_list:
-    #     final_res = final_res + f'**Command** : {i.name}\n**Description** : \n{i.help}\n'
-    # final_res = final_res + '```'
-    # await ctx.send(final_res)
 
 bot.add_cog(ChannelHandler(bot))
 bot.run('OTE0ODExMDIzODQyNzYyNzc0.YaSeKA.RVUgiPXE5GS0b1Z154dXpxRy__A')
