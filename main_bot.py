@@ -293,6 +293,7 @@ class ChannelHandler(commands.Cog):
     async def createAllTeamReqs(self, ctx, name1:str, name2:str, team_name:str, *kwargs):
         '''
         Creates a Role, Category, Text and Voice Channel made for a specific team
+        Usage: $createAllTeamReqs <name1> <name2> <team_name>
         '''
         try:
             curr_guild = ctx.guild
@@ -314,6 +315,7 @@ class ChannelHandler(commands.Cog):
     async def deleteAllTeamReqs(self, ctx, team_name):
         '''
         Deletes a Role, Category, Text and Voice Channel made for a specific team
+        Usage: $deleteAllTeamReqs <team_name>
         '''
         try:
             curr_guild = ctx.guild
@@ -374,9 +376,9 @@ class ChannelHandler(commands.Cog):
 
     @commands.command()
     @commands.check(checkIfUserIsCore)
-    async def removeRoles(self, ctx, username:str, role_to_remove:str):
+    async def removeRole(self, ctx, username:str, role_to_remove:str):
         '''
-        Removes specified roles of requested user.
+        Removes specified role of requested user.
         Usage: $removeRoles <username> <role_to_remove>
         '''
         curr_member = helpers.getMember(ctx, username)
