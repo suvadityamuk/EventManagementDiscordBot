@@ -104,7 +104,6 @@ class ChannelHandler(commands.Cog):
         for i in kwargs:
             if helpers.getRoleString(i) != None:
                 role_to_sync_with = helpers.getRoleString(i)
-        # role_to_sync_with = kwargs.get('role_to_sync_with', None)
         if type(role_to_sync_with) is str:
             role_to_sync_with = helpers.getRole(ctx, role_to_sync_with)
         try:
