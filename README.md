@@ -1,6 +1,6 @@
 # Event Management Discord Bot
 
-A *Discord bot* written in Python that can be used to control event management on a Discord server.  
+A *Discord bot* written in Python that can be used to control event management on a Discord server. Made originally for GDSC MPSTME CodeWars
 
 Commands List:
 ----
