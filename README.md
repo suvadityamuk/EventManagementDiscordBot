@@ -2,6 +2,11 @@
 
 A *Discord bot* written in Python that can be used to control event management on a Discord server. Made originally for GDSC MPSTME CodeWars
 
+Requirements:
+----
+- Requires a [Discord Developer Profile](https://discord.com/developers) for generating application Token
+- Requires `discord.py`
+
 Commands List:
 ----
 - ### Create a new Role
