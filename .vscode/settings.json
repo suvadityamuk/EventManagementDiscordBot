@@ -1,6 +1,0 @@
-{
-    "python.linting.enabled": true,
-    "python.pythonPath": "C:\\Users\\suvad\\AppData\\Local\\Programs\\Python\\Python39\\python.exe",
-    "git.ignoreLimitWarning": true,
-    "python.analysis.extraPaths": ["C:\\Users\\suvad\\Python Works\\.venv\\Lib\\site-packages", "C:\\Users\\suvad\\Python Works\\.venv\\Lib\\site-packages\\pygsheets"]
-}
