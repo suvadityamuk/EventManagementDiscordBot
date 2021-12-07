@@ -20,12 +20,12 @@ Can be used to create a new role. As of now, the permission level of this role i
 Can be used to delete a previously-existing role.
 
 - ### Create a new Category
-`$createCategory <cat_name>`
+`$createCategory <cat_name> role_to_sync_with=<optional_arg>`
 
 Can be used to create a new category. 
 
 - ### Delete an existing Category
-`$deleteCategory <cat_name> role_to_sync_with=<optional_arg>`
+`$deleteCategory <cat_name>`
 
 Can be used to delete a previously-existing category.
 
